@@ -13,8 +13,8 @@ warnings.filterwarnings("ignore")
 init_notebook_mode(connected=True)
 
 #stat_num = 1000 # Number of stations to plot for testing
-year_num = 20 # Number of past years to consider
-extremes_num = 10 # Number of hottest and coldest places to display
+year_num = 1 # Number of past years to consider
+#extremes_num = 10 # Number of hottest and coldest places to display
 
 yearfiles = os.listdir("D:/Big data/archive/gsod_all_years")
 yearfiles.sort()
@@ -82,47 +82,70 @@ for member in tar.getmembers()[1:]:
         df = df.append(content)
 tar.close()
 
+df_loc = pd.merge(df, station_loc, how='inner', on=['USAF','WBAN'])
+df_loc.to_csv('D:/Big data/csv/sample.csv')
+
 import findspark
 findspark.init()
 
-from pyspark.ml import Pipeline
+import pyspark.pandas
+import databricks.koalas
+
+import numpy
+import matplotlib.pyplot as plt
+import pandas
+
+from pyspark.sql import SparkSession
 from pyspark.ml.regression import RandomForestRegressor
-from pyspark.ml.feature import VectorIndexer
 from pyspark.ml.evaluation import RegressionEvaluator
+from sklearn.ensemble import RandomForestRegressor
 
-# Load and parse the data file, converting it to a DataFrame.
-data = df
-features = data.iloc[:,3]
-indexedFeatures = data.iloc[:,8]
+#Reading the data
+#data = spark.read.format("libsvm").load("D:/Big data/csv/sample.csv")
+#data= pd.read_csv('D:/Big data/csv/sample.csv')
+#pyspark.read.option("header","false").csv("D:/Big data/csv/sample.csv")
 
-# Automatically identify categorical features, and index them.
-# Set maxCategories so features with > 4 distinct values are treated as continuous.
-featureIndexer =\
-    VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=4).fit(data)
+data= pyspark.pandas.read_csv('D:/Big data/csv/sample.csv',headers= False)
 
-# Split the data into training and test sets (30% held out for testing)
-(trainingData, testData) = data.randomSplit([0.7, 0.3])
+# just checking
+#print(data) 
+#print(type(data))
 
-# Train a RandomForest model.
-rf = RandomForestRegressor(featuresCol="indexedFeatures")
+#(trainingData, testData) = data.randomSplit([0.7, 0.3])
 
-# Chain indexer and forest in a Pipeline
-pipeline = Pipeline(stages=[featureIndexer, rf])
+splits = data.to_spark().randomSplit([0.7, 0.3], seed=12)
+trainingData = splits[0].to_koalas()
+testData = splits[1].to_koalas()
 
-# Train model.  This also runs the indexer.
-model = pipeline.fit(trainingData)
+#splits = data.randomSplit([0.7, 0.3], 24)
+#trainingData = splits[0].to_koalas()
+#testData = splits[1].to_koalas()
 
-# Make predictions.
-predictions = model.transform(testData)
+train_x= trainingData.iloc [:,5] 
+train_y= trainingData.iloc [:,10] 
+test_x= testData.iloc [:,5] 
 
-# Select example rows to display.
-predictions.select("prediction", "label", "features").show(5)
+#print ("--------x----------------------------------")
+#print(train_x)
 
-# Select (prediction, true label) and compute test error
-evaluator = RegressionEvaluator(
-    labelCol="label", predictionCol="prediction", metricName="rmse")
-rmse = evaluator.evaluate(predictions)
-print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
+#print ("--------y----------------------------------")
+#print(train_y)
 
-rfModel = model.stages[1]
-print(rfModel)  # summary only
+#print ("------------------------------------------")
+regressor = RandomForestRegressor(n_estimators = 100, random_state = 0)
+#regressor.fit(train_x.to_frame(), train_y)
+
+train_x = train_x.to_numpy()
+train_y = train_y.to_numpy()
+test_x = test_x.to_numpy()
+
+#make them 2D-arrays
+train_x.reshape(-1,1)
+train_y.reshape(-1,1)
+test_x.reshape(-1,1)
+
+regressor.fit(train_x.reshape(-1,1), train_y.reshape(-1,1))
+
+#regressor.fit(train_x, train_y) 
+#test_x = testData.iloc [:, 5] # ” : ” means it will select all rows 
+y_pred = regressor.predict(test_x.reshape(-1,1))
