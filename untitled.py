@@ -184,9 +184,9 @@ rfr_model = rfr.fit(train_df)
 # print("Intercept: " + str(rfr_model.intercept))
 
 #to summerise the model and print out some metrics
-trainingSummary = rfr_model.summary
-print("RMSE: %f" % trainingSummary.rootMeanSquaredError)
-print("r2: %f" % trainingSummary.r2)
+# trainingSummary = rfr_model.summary
+# print("RMSE: %f" % trainingSummary.rootMeanSquaredError)
+# print("r2: %f" % trainingSummary.r2)
 
 train_df.describe().show()
 
