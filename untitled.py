@@ -85,17 +85,17 @@ tar.close()
 df_loc = pd.merge(df, station_loc, how='inner', on=['USAF','WBAN'])
 df_loc.to_csv('D:/Big data/csv/sample.csv')
 
-# import findspark
-# findspark.init()
+import findspark
+findspark.init()
 
-# import pyspark.pandas
-# import databricks.koalas
+import pyspark.pandas
+ #import databricks.koalas
 
-# import numpy
-# import matplotlib.pyplot as plt
-# import pandas
+import numpy
+ #import matplotlib.pyplot as plt
+import pandas
 
-# from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession
 # from pyspark.ml.regression import RandomForestRegressor
 # from pyspark.ml.evaluation import RegressionEvaluator
 # from sklearn.ensemble import RandomForestRegressor
@@ -108,7 +108,7 @@ df_loc.to_csv('D:/Big data/csv/sample.csv')
 # data= pyspark.pandas.read_csv('D:/Big data/csv/sample.csv',headers= False)
 
 # # just checking
-# #print(data) 
+# #print(data)
 # #print(type(data))
 
 # #(trainingData, testData) = data.randomSplit([0.7, 0.3])
@@ -121,9 +121,9 @@ df_loc.to_csv('D:/Big data/csv/sample.csv')
 # #trainingData = splits[0].to_koalas()
 # #testData = splits[1].to_koalas()
 
-# train_x= trainingData.iloc [:,5] 
-# train_y= trainingData.iloc [:,10] 
-# test_x= testData.iloc [:,5] 
+# train_x= trainingData.iloc [:,5]
+# train_y= trainingData.iloc [:,10]
+# test_x= testData.iloc [:,5]
 
 # #print ("--------x----------------------------------")
 # #print(train_x)
@@ -146,8 +146,8 @@ df_loc.to_csv('D:/Big data/csv/sample.csv')
 
 # regressor.fit(train_x.reshape(-1,1), train_y.reshape(-1,1))
 
-# #regressor.fit(train_x, train_y) 
-# #test_x = testData.iloc [:, 5] # ” : ” means it will select all rows 
+# #regressor.fit(train_x, train_y)
+# #test_x = testData.iloc [:, 5] # ” : ” means it will select all rows
 # y_pred = regressor.predict(test_x.reshape(-1,1))
 
 #code to read the output CSV file and feed it to Spark SQl
@@ -158,7 +158,7 @@ sqlContext = SQLContext(sc)
 snwFlPred = sqlContext.read.format('com.databricks.spark.csv').options(header='true', inferschema='true').load('D:/Big data/csv/sample.csv')
 snwFlPred.take(1)
 
-#code to find the co-relation between the 
+#code to find the co-relation between the
 import six
 for i in snwFlPred.columns:
     if not( isinstance(snwFlPred.select(i).take(1)[0][0], six.string_types)):
@@ -168,7 +168,7 @@ for i in snwFlPred.columns:
 from pyspark.ml.feature import VectorAssembler
 vectorAssembler = VectorAssembler(inputCols = ['TEMP','DEWP','WDSP','MAX','MIN'], outputCol = 'features')
 vsnwFlPred = vectorAssembler.transform(snwFlPred)
-vsnwFlPred = vsnwFlPred.select(['features', 'MV'])
+vsnwFlPred = vsnwFlPred.select(['features', 'PRCP'])
 vsnwFlPred.show(3)
 
 #split the data into training and testing data
@@ -178,7 +178,7 @@ test_df = splits[1]
 
 #random forest regression
 from pyspark.ml.regression import RandomForestRegressor
-rfr = RandomForestRegressor(featuresCol = 'features', labelCol='MV', maxIter=10, regParam=0.3, elasticNetParam=0.8)
+rfr = RandomForestRegressor(featuresCol = 'features', labelCol='PRCP', maxIter=10, regParam=0.3, elasticNetParam=0.8)
 rfr_model = rfr.fit(train_df)
 print("Coefficients: " + str(rfr_model.coefficients))
 print("Intercept: " + str(rfr_model.intercept))
