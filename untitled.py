@@ -180,8 +180,8 @@ test_df = splits[1]
 from pyspark.ml.regression import RandomForestRegressor
 rfr = RandomForestRegressor(featuresCol = 'features', labelCol = 'PRCP')
 rfr_model = rfr.fit(train_df)
-print("Coefficients: " + str(rfr_model.coefficients))
-print("Intercept: " + str(rfr_model.intercept))
+# print("Coefficients: " + str(rfr_model.coefficients))
+# print("Intercept: " + str(rfr_model.intercept))
 
 #to summerise the model and print out some metrics
 trainingSummary = rfr_model.summary
