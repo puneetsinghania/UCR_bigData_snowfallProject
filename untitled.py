@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 init_notebook_mode(connected=True)
 
 #stat_num = 1000 # Number of stations to plot for testing
-year_num = 1 # Number of past years to consider
+year_num = 20 # Number of past years to consider
 #extremes_num = 10 # Number of hottest and coldest places to display
 
 yearfiles = os.listdir("D:/Big data/archive/gsod_all_years")
