@@ -178,7 +178,7 @@ test_df = splits[1]
 
 #random forest regression
 from pyspark.ml.regression import RandomForestRegressor
-rfr = RandomForestRegressor(featuresCol = 'features', labelCol='PRCP', maxIter=10, regParam=0.3, elasticNetParam=0.8)
+rfr = RandomForestRegressor(featuresCol = 'features')
 rfr_model = rfr.fit(train_df)
 print("Coefficients: " + str(rfr_model.coefficients))
 print("Intercept: " + str(rfr_model.intercept))
