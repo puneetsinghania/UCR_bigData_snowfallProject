@@ -153,7 +153,7 @@ from pyspark.sql import SparkSession
 #code to read the output CSV file and feed it to Spark SQl
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SQLContext
-sc= SparkContext()
+sc = SparkContext.getOrCreate();
 sqlContext = SQLContext(sc)
 snwFlPred = sqlContext.read.format('com.databricks.spark.csv').options(header='true', inferschema='true').load('D:/Big data/csv/sample.csv')
 snwFlPred.take(1)
