@@ -59,28 +59,27 @@ def preprocess_station_file_content(content):
     content['DAY']=pd.DatetimeIndex(content['YEARMODA']).day
     return content
 
-yearfile = yearfiles[-1]
-print(yearfile)
-i=0
-tar = tarfile.open("D:/Big data/archive/gsod_all_years/"+yearfile, "r")
-print(len(tar.getmembers()[1:]))
-#for member in np.random.choice(tar.getmembers()[1:], size=stat_num, replace=False):
-for member in tar.getmembers()[1:]:
-    name_parts = re.sub("\.op\.gz$","",re.sub("^\./","",member.name)).split("-")
-    usaf = name_parts[0]
-    wban = int(name_parts[1])
-    if station_loc[(station_loc['USAF']==usaf) & (station_loc['WBAN']==wban)].shape[0]!=0:
-        i=i+1
-        #if i%(stat_num//10) == 0: print(i)
-        f=tar.extractfile(member)
-        f=gzip.open(f, 'rb')
-        content=[re.sub(" +", ",", line.decode("utf-8")).split(",") for line in f.readlines()]
-        content=preprocess_station_file_content(content)
-        #print (content)
-        df_day = df_day.append(content[content['YEARMODA']==content['YEARMODA'].max()])
-        content = content.groupby(['USAF','WBAN','YEAR','MONTH']).agg('median').reset_index()
-        df = df.append(content)
-tar.close()
+for yearfile in yearfiles:
+    print(yearfile)
+    i=0
+    tar = tarfile.open("../input/gsod_all_years/"+yearfile, "r")
+    print(len(tar.getmembers()[1:]))
+    #for member in np.random.choice(tar.getmembers()[1:], size=stat_num, replace=False):
+    for member in tar.getmembers()[1:]:
+        name_parts = re.sub("\.op\.gz$","",re.sub("^\./","",member.name)).split("-")
+        usaf = name_parts[0]
+        wban = int(name_parts[1])
+        if station_loc[(station_loc['USAF']==usaf) & (station_loc['WBAN']==wban)].shape[0]!=0:
+            i=i+1
+            #if i%(stat_num//10) == 0: print(i)
+            f=tar.extractfile(member)
+            f=gzip.open(f, 'rb')
+            content=[re.sub(" +", ",", line.decode("utf-8")).split(",") for line in f.readlines()]
+            content=preprocess_station_file_content(content)
+            df_day = df_day.append(content[(content['MONTH']==day.month) & (content['DAY']==day.day)])
+            content = content.groupby(['USAF','WBAN','YEAR','MONTH']).agg('median').reset_index()
+            df = df.append(content)
+    tar.close()
 
 df_loc = pd.merge(df, station_loc, how='inner', on=['USAF','WBAN'])
 df_loc.to_csv('D:/Big data/csv/sample.csv')
