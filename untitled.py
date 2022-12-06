@@ -76,7 +76,8 @@ for yearfile in yearfiles:
             f=gzip.open(f, 'rb')
             content=[re.sub(" +", ",", line.decode("utf-8")).split(",") for line in f.readlines()]
             content=preprocess_station_file_content(content)
-            df_day = df_day.append(content[(content['MONTH']==day.month) & (content['DAY']==day.day)])
+            #df_day = df_day.append(content[(content['MONTH']==day.month) & (content['DAY']==day.day)])
+            df_day = df_day.append(content[content['YEARMODA']==content['YEARMODA'].max()])
             content = content.groupby(['USAF','WBAN','YEAR','MONTH']).agg('median').reset_index()
             df = df.append(content)
     tar.close()
