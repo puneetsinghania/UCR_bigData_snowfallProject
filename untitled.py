@@ -62,7 +62,7 @@ def preprocess_station_file_content(content):
 for yearfile in yearfiles:
     print(yearfile)
     i=0
-    tar = tarfile.open("../input/gsod_all_years/"+yearfile, "r")
+    tar = tarfile.open("D:/Big data/archive/gsod_all_years/"+yearfile, "r")
     print(len(tar.getmembers()[1:]))
     #for member in np.random.choice(tar.getmembers()[1:], size=stat_num, replace=False):
     for member in tar.getmembers()[1:]:
