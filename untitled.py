@@ -176,35 +176,35 @@ splits = vsnwFlPred.randomSplit([0.7, 0.3])
 train_df = splits[0]
 test_df = splits[1]
 
-#random forest regression
-from pyspark.ml.regression import RandomForestRegressor
-rfr = RandomForestRegressor(featuresCol = 'features', labelCol = 'PRCP')
-rfr_model = rfr.fit(train_df)
-# print("Coefficients: " + str(rfr_model.coefficients))
-# print("Intercept: " + str(rfr_model.intercept))
+# #random forest regression
+# from pyspark.ml.regression import RandomForestRegressor
+# rfr = RandomForestRegressor(featuresCol = 'features', labelCol = 'PRCP')
+# rfr_model = rfr.fit(train_df)
+# # print("Coefficients: " + str(rfr_model.coefficients))
+# # print("Intercept: " + str(rfr_model.intercept))
 
-#to summerise the model and print out some metrics
-# trainingSummary = rfr_model.summary
-# print("RMSE: %f" % trainingSummary.rootMeanSquaredError)
-# print("r2: %f" % trainingSummary.r2)
+# #to summerise the model and print out some metrics
+# # trainingSummary = rfr_model.summary
+# # print("RMSE: %f" % trainingSummary.rootMeanSquaredError)
+# # print("r2: %f" % trainingSummary.r2)
 
-train_df.describe().show()
+# train_df.describe().show()
 
-#prediction on actual test data
-rfr_predictions = rfr_model.transform(test_df)
-rfr_predictions.select("prediction","PRCP","features").show(5)
+# #prediction on actual test data
+# rfr_predictions = rfr_model.transform(test_df)
+# rfr_predictions.select("prediction","PRCP","features").show(5)
 
-#evaluating random forest regression test data
-from pyspark.ml.evaluation import RegressionEvaluator
-rfr_evaluator = RegressionEvaluator(predictionCol="prediction", \
-                 labelCol="PRCP",metricName="r2")
-print("R Squared (R2) on test data = %g" % rfr_evaluator.evaluate(rfr_predictions))
+# #evaluating random forest regression test data
+# from pyspark.ml.evaluation import RegressionEvaluator
+# rfr_evaluator = RegressionEvaluator(predictionCol="prediction", \
+#                  labelCol="PRCP",metricName="r2")
+# print("R Squared (R2) on test data = %g" % rfr_evaluator.evaluate(rfr_predictions))
 
-test_result = rfr_model.evaluate(test_df)
-print("Root Mean Squared Error (RMSE) on test data = %g" % test_result.rootMeanSquaredError)
+# test_result = rfr_model.evaluate(test_df)
+# print("Root Mean Squared Error (RMSE) on test data = %g" % test_result.rootMeanSquaredError)
 
-predictions = rfr_model.transform(test_df)
-predictions.select("prediction","PRCP","features").show()
+# predictions = rfr_model.transform(test_df)
+# predictions.select("prediction","PRCP","features").show()
 
 #gradient boost regressor
 from pyspark.ml.regression import GBTRegressor
