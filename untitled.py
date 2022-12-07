@@ -168,7 +168,7 @@ for i in snwFlPred.columns:
 from pyspark.ml.feature import VectorAssembler
 vectorAssembler = VectorAssembler(inputCols = ['TEMP','DEWP','WDSP','MAX','MIN'], outputCol = 'features')
 vsnwFlPred = vectorAssembler.transform(snwFlPred)
-vsnwFlPred = vsnwFlPred.select(['features', 'PRCP'])
+vsnwFlPred = vsnwFlPred.select(['features', 'PRCP','LAT','LON'])
 vsnwFlPred.show(3)
 
 #split the data into training and testing data
@@ -217,3 +217,4 @@ gbt_predictions.select('prediction', 'PRCP', 'features').show(5)
 gbt_evaluator = RegressionEvaluator(labelCol="PRCP", predictionCol="prediction", metricName="rmse")
 rmse = gbt_evaluator.evaluate(gbt_predictions)
 print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
+gbt_predictions.toPandas().to_csv('D:/Big data/csv/prediction.csv')
