@@ -168,7 +168,7 @@ for i in snwFlPred.columns:
 from pyspark.ml.feature import VectorAssembler
 vectorAssembler = VectorAssembler(inputCols = ['TEMP','DEWP','WDSP','MAX','MIN'], outputCol = 'features')
 vsnwFlPred = vectorAssembler.transform(snwFlPred)
-vsnwFlPred = vsnwFlPred.select(['features', 'PRCP','LAT','LON','YEAR','MONTH','DAY'])
+vsnwFlPred = vsnwFlPred.select(['features', 'PRCP','LAT','LON','YEAR','MONTH','DAY','TEMP','LBL'])
 vsnwFlPred.show(3)
 
 #split the data into training and testing data
@@ -229,7 +229,7 @@ test_df = splits[1]
 
 #gradient boost regressor
 from pyspark.ml.regression import GBTRegressor
-gradient_boost = GBTRegressor(featuresCol = 'features', labelCol = 'PRCP', maxIter=10)
+gradient_boost = GBTRegressor(featuresCol = 'features', labelCol = 'PRCP', maxIter=100)
 gradient_boost_model = gradient_boost.fit(train_df)
 gradient_boost_predictions = gradient_boost_model.transform(test_df)
 gradient_boost_predictions.select('prediction', 'PRCP', 'features').show(5)
@@ -239,3 +239,4 @@ gradient_boost_evaluator = RegressionEvaluator(labelCol="PRCP", predictionCol="p
 rmse = gradient_boost_evaluator.evaluate(gradient_boost_predictions)
 print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
 gradient_boost_predictions.toPandas().to_csv('D:/Big data/csv/prediction.csv')
+#Rigved Patil(862322104) and Shadhrush(862394040): Worked on the Data Pre-Processing, Machine Learning Models and Finding the correlation of different entities with each other
