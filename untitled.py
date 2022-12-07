@@ -158,7 +158,7 @@ sqlContext = SQLContext(sc)
 snwFlPred = sqlContext.read.format('com.databricks.spark.csv').options(header='true', inferschema='true').load('D:/Big data/csv/sample.csv')
 snwFlPred.take(1)
 
-#code to find the co-relation between the
+
 import six
 for i in snwFlPred.columns:
     if not( isinstance(snwFlPred.select(i).take(1)[0][0], six.string_types)):
@@ -168,53 +168,74 @@ for i in snwFlPred.columns:
 from pyspark.ml.feature import VectorAssembler
 vectorAssembler = VectorAssembler(inputCols = ['TEMP','DEWP','WDSP','MAX','MIN'], outputCol = 'features')
 vsnwFlPred = vectorAssembler.transform(snwFlPred)
-vsnwFlPred = vsnwFlPred.select(['features', 'PRCP','LAT','LON'])
+vsnwFlPred = vsnwFlPred.select(['features', 'PRCP','LAT','LON','YEAR','MONTH','DAY'])
 vsnwFlPred.show(3)
 
 #split the data into training and testing data
 splits = vsnwFlPred.randomSplit([0.7, 0.3])
 train_df = splits[0]
 test_df = splits[1]
-
-# #random forest regression
 # from pyspark.ml.regression import RandomForestRegressor
-# rfr = RandomForestRegressor(featuresCol = 'features', labelCol = 'PRCP')
-# rfr_model = rfr.fit(train_df)
-# # print("Coefficients: " + str(rfr_model.coefficients))
-# # print("Intercept: " + str(rfr_model.intercept))
-
-# #to summerise the model and print out some metrics
-# # trainingSummary = rfr_model.summary
-# # print("RMSE: %f" % trainingSummary.rootMeanSquaredError)
-# # print("r2: %f" % trainingSummary.r2)
-
-# train_df.describe().show()
-
-# #prediction on actual test data
-# rfr_predictions = rfr_model.transform(test_df)
-# rfr_predictions.select("prediction","PRCP","features").show(5)
-
-# #evaluating random forest regression test data
 # from pyspark.ml.evaluation import RegressionEvaluator
-# rfr_evaluator = RegressionEvaluator(predictionCol="prediction", \
-#                  labelCol="PRCP",metricName="r2")
-# print("R Squared (R2) on test data = %g" % rfr_evaluator.evaluate(rfr_predictions))
+# from sklearn.ensemble import RandomForestRegressor
 
-# test_result = rfr_model.evaluate(test_df)
-# print("Root Mean Squared Error (RMSE) on test data = %g" % test_result.rootMeanSquaredError)
+# #Reading the data
+# #data = spark.read.format("libsvm").load("D:/Big data/csv/sample.csv")
+# #data= pd.read_csv('D:/Big data/csv/sample.csv')
+# #pyspark.read.option("header","false").csv("D:/Big data/csv/sample.csv")
 
-# predictions = rfr_model.transform(test_df)
-# predictions.select("prediction","PRCP","features").show()
+# data= pyspark.pandas.read_csv('D:/Big data/csv/sample.csv',headers= False)
+
+# # just checking
+# #print(data)
+# #print(type(data))
+
+# #(trainingData, testData) = data.randomSplit([0.7, 0.3])
+
+# splits = data.to_spark().randomSplit([0.7, 0.3], seed=12)
+# trainingData = splits[0].to_koalas()
+# testData = splits[1].to_koalas()
+
+# #splits = data.randomSplit([0.7, 0.3], 24)
+# #trainingData = splits[0].to_koalas()
+# #testData = splits[1].to_koalas()
+
+# train_x= trainingData.iloc [:,5]
+# train_y= trainingData.iloc [:,10]
+# test_x= testData.iloc [:,5]
+
+# #print(train_x)
+
+# #print(train_y)
+
+# regressor = RandomForestRegressor(n_estimators = 100, random_state = 0)
+# #regressor.fit(train_x.to_frame(), train_y)
+
+# train_x = train_x.to_numpy()
+# train_y = train_y.to_numpy()
+# test_x = test_x.to_numpy()
+
+# #make them 2D-arrays
+# train_x.reshape(-1,1)
+# train_y.reshape(-1,1)
+# test_x.reshape(-1,1)
+
+# regressor.fit(train_x.reshape(-1,1), train_y.reshape(-1,1))
+
+# #regressor.fit(train_x, train_y)
+# #test_x = testData.iloc [:, 5] # ” : ” means it will select all rows
+# y_pred = regressor.predict(test_x.reshape(-1,1))
+
 
 #gradient boost regressor
 from pyspark.ml.regression import GBTRegressor
-gbt = GBTRegressor(featuresCol = 'features', labelCol = 'PRCP', maxIter=10)
-gbt_model = gbt.fit(train_df)
-gbt_predictions = gbt_model.transform(test_df)
-gbt_predictions.select('prediction', 'PRCP', 'features').show(5)
+gradient_boost = GBTRegressor(featuresCol = 'features', labelCol = 'PRCP', maxIter=10)
+gradient_boost_model = gradient_boost.fit(train_df)
+gradient_boost_predictions = gradient_boost_model.transform(test_df)
+gradient_boost_predictions.select('prediction', 'PRCP', 'features').show(5)
 
 #evaluating gradient boost regression test data
-gbt_evaluator = RegressionEvaluator(labelCol="PRCP", predictionCol="prediction", metricName="rmse")
-rmse = gbt_evaluator.evaluate(gbt_predictions)
+gradient_boost_evaluator = RegressionEvaluator(labelCol="PRCP", predictionCol="prediction", metricName="rmse")
+rmse = gradient_boost_evaluator.evaluate(gradient_boost_predictions)
 print("Root Mean Squared Error (RMSE) on test data = %g" % rmse)
-gbt_predictions.toPandas().to_csv('D:/Big data/csv/prediction.csv')
+gradient_boost_predictions.toPandas().to_csv('D:/Big data/csv/prediction.csv')
